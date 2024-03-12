@@ -1,6 +1,6 @@
 package flab.tickethub.auth.adaptor.`in`
 
-import flab.tickethub.auth.adaptor.`in`.requset.LoginRequest
+import flab.tickethub.auth.adaptor.`in`.request.LoginRequest
 import flab.tickethub.auth.adaptor.`in`.response.LoginResponse
 import flab.tickethub.auth.application.port.`in`.AuthQueryUseCase
 import flab.tickethub.support.endpoint.AUTH_URL
