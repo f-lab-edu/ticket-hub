@@ -5,6 +5,8 @@ import flab.tickethub.member.application.port.`in`.MemberCommandUseCase
 import flab.tickethub.member.application.port.out.MemberCommandPort
 import flab.tickethub.member.application.port.out.MemberQueryPort
 import flab.tickethub.member.domain.Member
+import flab.tickethub.support.error.ApiException
+import flab.tickethub.support.error.ErrorCode
 import org.springframework.stereotype.Service
 
 @Service
@@ -18,11 +20,10 @@ class MemberCommandService(
 
         val member = Member.from(request)
         memberCommandPort.create(member)
-
     }
 
     private fun validateExistsEmail(email: String) {
-        if (memberQueryPort.existsByEmail(email)) throw IllegalArgumentException("이미 존재하는 이메일입니다.")
+        if (memberQueryPort.existsByEmail(email)) throw ApiException(ErrorCode.DUPLICATED_MEMBER_EMAIL)
     }
 
 }
