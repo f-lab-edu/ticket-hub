@@ -3,9 +3,9 @@ package flab.tickethub.auth.application.service
 import flab.tickethub.auth.application.port.out.TokenProvider
 import flab.tickethub.auth.domain.TokenPair
 import flab.tickethub.auth.domain.TokenPayload
-import flab.tickethub.support.properties.JwtProperties
 import flab.tickethub.support.error.ApiException
 import flab.tickethub.support.error.ErrorCode
+import flab.tickethub.support.properties.JwtProperties
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.JwtException
@@ -40,7 +40,7 @@ class JwtProvider(
         return generateToken(
             accessSecretKey,
             jwtProperties.accessExp.toMillis(),
-            tokenPayload.toClaims()
+            tokenPayload.claims
         )
     }
 
@@ -48,7 +48,7 @@ class JwtProvider(
         return generateToken(
             refreshSecretKey,
             jwtProperties.refreshExp.toMillis(),
-            tokenPayload.toClaims()
+            tokenPayload.claims
         )
     }
 

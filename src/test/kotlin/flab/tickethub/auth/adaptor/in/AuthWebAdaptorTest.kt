@@ -2,11 +2,11 @@ package flab.tickethub.auth.adaptor.`in`
 
 import flab.tickethub.auth.adaptor.`in`.request.LoginRequest
 import flab.tickethub.auth.application.port.`in`.AuthQueryUseCase
-import flab.tickethub.auth.application.port.out.TokenProvider
 import flab.tickethub.auth.domain.TokenPair
 import flab.tickethub.auth.domain.TokenPayload
 import flab.tickethub.support.RestDocsSupport
 import flab.tickethub.support.constant.ApiEndpoint
+import flab.tickethub.support.domain.Identifiable
 import flab.tickethub.support.error.ApiException
 import flab.tickethub.support.error.ErrorCode
 import io.restassured.http.ContentType
@@ -26,23 +26,25 @@ class AuthWebAdaptorTest : RestDocsSupport() {
 
     private val authCommandUseCase = mock(AuthCommandUseCase::class.java)
 
-    private val tokenProvider = mock(TokenProvider::class.java)
-
     @Test
     fun `로그인 성공`() {
         val request = LoginRequest(
             email = "email@email.com",
             password = "password",
         )
-        val tokenPayload = TokenPayload(1L)
+        val identifiable = object : Identifiable {
+            override fun id(): Long = 1L
+        }
+
+        val tokenPayload = TokenPayload(identifiable)
         val tokenPair = TokenPair(
-            memberId = 1L,
+            memberId = identifiable,
             accessToken = "accessToken",
             refreshToken = "refreshToken"
         )
 
         given(authQueryUseCase.login(request)).willReturn(tokenPayload)
-        given(tokenProvider.generateTokenPair(tokenPayload)).willReturn(tokenPair)
+        given(authCommandUseCase.updateRefreshToken(tokenPayload)).willReturn(tokenPair)
 
         given()
             .contentType(ContentType.JSON)
@@ -95,7 +97,7 @@ class AuthWebAdaptorTest : RestDocsSupport() {
     }
 
     override fun controller(): Any {
-        return AuthWebAdaptor(authQueryUseCase, authCommandUseCase, tokenProvider)
+        return AuthWebAdaptor(authQueryUseCase, authCommandUseCase)
     }
 
 }
