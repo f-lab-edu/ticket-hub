@@ -13,11 +13,15 @@ import org.springframework.web.bind.annotation.RestController
 
 @RequestMapping(ApiEndpoint.AUTH)
 @RestController
-class AuthWebAdaptor(private val authQueryUseCase: AuthQueryUseCase) {
+class AuthWebAdaptor(
+    private val authQueryUseCase: AuthQueryUseCase,
+    private val authCommandUseCase: AuthCommandUseCase,
+) {
 
     @PostMapping(ApiEndpoint.LOGIN_ENDPOINT)
     fun login(@RequestBody request: LoginRequest): ResponseEntity<ApiResult<TokenPair>> {
-        val tokenPair = authQueryUseCase.login(request)
+        val tokenPayload = authQueryUseCase.login(request)
+        val tokenPair = authCommandUseCase.updateRefreshToken(tokenPayload)
 
         return ApiResult.ok(tokenPair)
     }

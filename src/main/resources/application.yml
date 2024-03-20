@@ -2,6 +2,13 @@ server:
   shutdown: graceful
 
 spring:
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
+
+  jackson:
+    mapper:
+      propagate-transient-marker: true
+
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/ticket-hub
@@ -21,4 +28,12 @@ spring:
         format_sql: true
         highlight_sql: true
     show-sql: true
+
+jwt:
+  access-key: asdfj08wqer98124j12l41k2h3lj1h2klj3h12lk
+  # 10 minutes
+  access-exp: 10m
+  refresh-key: il12u4o8i12ojnf1o4u12l1k2h3klu12g4ilchb21ljhjw
+  # 6 months
+  refresh-exp: 180d
 

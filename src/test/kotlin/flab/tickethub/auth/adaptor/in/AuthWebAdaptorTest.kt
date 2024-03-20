@@ -3,10 +3,15 @@ package flab.tickethub.auth.adaptor.`in`
 import flab.tickethub.auth.adaptor.`in`.request.LoginRequest
 import flab.tickethub.auth.application.port.`in`.AuthQueryUseCase
 import flab.tickethub.auth.domain.TokenPair
+import flab.tickethub.auth.domain.TokenPayload
 import flab.tickethub.support.RestDocsSupport
 import flab.tickethub.support.constant.ApiEndpoint
+import flab.tickethub.support.domain.Identifiable
+import flab.tickethub.support.error.ApiException
+import flab.tickethub.support.error.ErrorCode
 import io.restassured.http.ContentType
 import org.hamcrest.core.IsEqual.equalTo
+import org.hamcrest.core.IsNull.nullValue
 import org.junit.jupiter.api.Test
 import org.mockito.BDDMockito.given
 import org.mockito.Mockito.mock
@@ -19,18 +24,27 @@ class AuthWebAdaptorTest : RestDocsSupport() {
 
     private val authQueryUseCase = mock(AuthQueryUseCase::class.java)
 
+    private val authCommandUseCase = mock(AuthCommandUseCase::class.java)
+
     @Test
     fun `로그인 성공`() {
         val request = LoginRequest(
             email = "email@email.com",
             password = "password",
         )
+        val identifiable = object : Identifiable {
+            override fun id(): Long = 1L
+        }
+
+        val tokenPayload = TokenPayload(identifiable)
         val tokenPair = TokenPair(
+            memberId = identifiable,
             accessToken = "accessToken",
             refreshToken = "refreshToken"
         )
 
-        given(authQueryUseCase.login(request)).willReturn(tokenPair)
+        given(authQueryUseCase.login(request)).willReturn(tokenPayload)
+        given(authCommandUseCase.updateRefreshToken(tokenPayload)).willReturn(tokenPair)
 
         given()
             .contentType(ContentType.JSON)
@@ -60,8 +74,30 @@ class AuthWebAdaptorTest : RestDocsSupport() {
             )
     }
 
+    @Test
+    fun `잘못된 이메일 또는 비밀번호 로그인 실패`() {
+        val request = LoginRequest(
+            email = "email@email.com",
+            password = "password",
+        )
+
+        given(authQueryUseCase.login(request)).willThrow(ApiException(ErrorCode.INVALID_EMAIL_OR_PASSWORD))
+
+        given()
+            .contentType(ContentType.JSON)
+            .body(convert(request))
+            .post(URI.create("${ApiEndpoint.AUTH}${ApiEndpoint.LOGIN_ENDPOINT}"))
+            .then()
+            .status(HttpStatus.UNAUTHORIZED)
+            .body(
+                "code", equalTo("INVALID_EMAIL_OR_PASSWORD"),
+                "message", equalTo("잘못된 이메일 또는 비밀번호입니다."),
+                "data", nullValue()
+            )
+    }
+
     override fun controller(): Any {
-        return AuthWebAdaptor(authQueryUseCase)
+        return AuthWebAdaptor(authQueryUseCase, authCommandUseCase)
     }
 
 }

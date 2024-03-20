@@ -1,42 +1,40 @@
 package flab.tickethub.member.domain
 
 import flab.tickethub.member.adaptor.`in`.request.CreateMemberRequest
-import jakarta.persistence.*
-import org.springframework.data.annotation.CreatedDate
-import org.springframework.data.annotation.LastModifiedDate
-import org.springframework.data.jpa.domain.support.AuditingEntityListener
+import flab.tickethub.support.domain.AbstractEntity
+import jakarta.persistence.Column
+import jakarta.persistence.Entity
 import java.time.LocalDateTime
 
-@EntityListeners(AuditingEntityListener::class)
 @Entity
 class Member(
-    private var email: String,
-    private var password: String,
-    private var name: String,
-    private var phoneNumber: String
-) {
+    @Column(name = "refresh_token", unique = true)
+    var refreshToken: String? = null,
 
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Id
-    @Column
-    private val id: Long? = null
+    @Column(name = "email", unique = true)
+    val email: String,
 
-    @CreatedDate
-    @Column(name = "created_at", updatable = false)
-    private var createdAt: LocalDateTime? = null
+    @Column(name = "password")
+    val password: String,
 
-    @LastModifiedDate
-    @Column(name = "modified_at")
-    private var modifiedAt: LocalDateTime? = null
+    @Column(name = "name")
+    val name: String,
+
+    @Column(name = "phone_number", unique = true)
+    val phoneNumber: String,
 
     @Column(name = "deleted_at")
-    private var deletedAt: LocalDateTime? = null
+    private var deletedAt: LocalDateTime? = null,
+) : AbstractEntity() {
 
     companion object {
-        fun from(request: CreateMemberRequest): Member {
+        fun from(
+            request: CreateMemberRequest,
+            encodedPassword: String
+        ): Member {
             return Member(
                 email = request.email,
-                password = request.password,
+                password = encodedPassword,
                 name = request.name,
                 phoneNumber = request.phoneNumber
             )
