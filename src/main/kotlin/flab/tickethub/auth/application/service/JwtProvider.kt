@@ -4,7 +4,6 @@ import flab.tickethub.auth.application.port.out.TokenProvider
 import flab.tickethub.auth.domain.TokenPair
 import flab.tickethub.auth.domain.TokenPayload
 import flab.tickethub.support.config.time.DateTimeProvider
-import flab.tickethub.support.error.ApiException
 import flab.tickethub.support.error.ErrorCode
 import flab.tickethub.support.properties.JwtProperties
 import io.jsonwebtoken.Claims
@@ -12,6 +11,8 @@ import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.JwtException
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
+import org.springframework.security.authentication.BadCredentialsException
+import org.springframework.security.authentication.CredentialsExpiredException
 import org.springframework.stereotype.Component
 import java.time.Duration
 import java.util.*
@@ -53,11 +54,11 @@ class JwtProvider(
         )
     }
 
-    override fun validateAccessToken(token: String): TokenPayload {
+    override fun validateAccessToken(token: String?): TokenPayload {
         return validateToken(token, accessSecretKey)
     }
 
-    override fun validateRefreshToken(token: String): TokenPayload {
+    override fun validateRefreshToken(token: String?): TokenPayload {
         return validateToken(token, refreshSecretKey)
     }
 
@@ -77,19 +78,19 @@ class JwtProvider(
     }
 
     private fun validateToken(
-        token: String,
+        token: String?,
         secretKey: SecretKey
     ): TokenPayload {
         try {
-            require(token.isNotBlank() && token.startsWith(BEARER_PREFIX))
+            require(!token.isNullOrBlank() && token.startsWith(BEARER_PREFIX))
             val parsedClaims = parsedClaims(token.removePrefix(BEARER_PREFIX), secretKey)
             return TokenPayload(parsedClaims)
         } catch (e: ExpiredJwtException) {
-            throw ApiException(ErrorCode.EXPIRED_TOKEN)
+            throw CredentialsExpiredException(ErrorCode.EXPIRED_TOKEN.message, e)
         } catch (e: JwtException) {
-            throw ApiException(ErrorCode.INVALID_TOKEN)
+            throw BadCredentialsException(ErrorCode.INVALID_TOKEN.message, e)
         } catch (e: IllegalArgumentException) {
-            throw ApiException(ErrorCode.INVALID_TOKEN)
+            throw BadCredentialsException(ErrorCode.INVALID_TOKEN.message, e)
         }
     }
 
