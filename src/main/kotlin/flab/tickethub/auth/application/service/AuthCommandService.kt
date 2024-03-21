@@ -2,8 +2,8 @@ package flab.tickethub.auth.application.service
 
 import flab.tickethub.auth.adaptor.`in`.AuthCommandUseCase
 import flab.tickethub.auth.application.port.out.TokenProvider
-import flab.tickethub.auth.domain.TokenPair
 import flab.tickethub.auth.domain.TokenPayload
+import flab.tickethub.auth.domain.TokenPair
 import flab.tickethub.member.application.port.out.MemberQueryPort
 import flab.tickethub.support.error.ApiException
 import flab.tickethub.support.error.ErrorCode
@@ -19,9 +19,7 @@ class AuthCommandService(
 
     override fun updateRefreshToken(tokenPayload: TokenPayload): TokenPair {
         val tokenPair = tokenProvider.generateTokenPair(tokenPayload)
-
-        val memberId = (tokenPair.memberId.id()
-            ?: throw ApiException(ErrorCode.NOT_FOUND_IDENTITY))
+        val memberId = tokenPair.tokenPayload.id()
 
         val member = memberQueryPort.findById(memberId)
             ?: throw ApiException(ErrorCode.NOT_FOUND_MEMBER)

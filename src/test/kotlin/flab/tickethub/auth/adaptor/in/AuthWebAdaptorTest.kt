@@ -2,11 +2,11 @@ package flab.tickethub.auth.adaptor.`in`
 
 import flab.tickethub.auth.adaptor.`in`.request.LoginRequest
 import flab.tickethub.auth.application.port.`in`.AuthQueryUseCase
-import flab.tickethub.auth.domain.TokenPair
 import flab.tickethub.auth.domain.TokenPayload
+import flab.tickethub.auth.domain.TokenPair
+import flab.tickethub.member.domain.Role
 import flab.tickethub.support.RestDocsSupport
 import flab.tickethub.support.constant.ApiEndpoint
-import flab.tickethub.support.domain.Identifiable
 import flab.tickethub.support.error.ApiException
 import flab.tickethub.support.error.ErrorCode
 import io.restassured.http.ContentType
@@ -28,17 +28,20 @@ class AuthWebAdaptorTest : RestDocsSupport() {
 
     @Test
     fun `로그인 성공`() {
+        val tokenPayload = object : TokenPayload {
+            override fun id() = 1L
+            override fun role() = Role.BUYER
+        }
+
+        val tokenPair = TokenPair(
+            accessToken = "accessToken",
+            refreshToken = "refreshToken",
+            tokenPayload = tokenPayload
+        )
+
         val request = LoginRequest(
             email = "email@email.com",
             password = "password",
-        )
-        val identifiable = Identifiable { 1L }
-
-        val tokenPayload = TokenPayload(identifiable)
-        val tokenPair = TokenPair(
-            memberId = identifiable,
-            accessToken = "accessToken",
-            refreshToken = "refreshToken"
         )
 
         given(authQueryUseCase.login(request)).willReturn(tokenPayload)

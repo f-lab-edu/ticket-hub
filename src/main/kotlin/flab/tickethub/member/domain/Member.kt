@@ -1,5 +1,6 @@
 package flab.tickethub.member.domain
 
+import flab.tickethub.auth.domain.TokenPayload
 import flab.tickethub.member.adaptor.`in`.request.CreateMemberRequest
 import flab.tickethub.support.domain.AbstractEntity
 import jakarta.persistence.Column
@@ -32,7 +33,7 @@ class Member(
 
     @Column(name = "deleted_at")
     private var deletedAt: LocalDateTime? = null,
-) : AbstractEntity() {
+) : AbstractEntity(), TokenPayload {
 
     companion object {
         fun from(
@@ -47,5 +48,7 @@ class Member(
             )
         }
     }
+
+    override fun role(): Role = role
 
 }

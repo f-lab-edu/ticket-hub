@@ -1,5 +1,7 @@
 package flab.tickethub.support.domain
 
+import flab.tickethub.support.error.ApiException
+import flab.tickethub.support.error.ErrorCode
 import jakarta.persistence.*
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.LastModifiedDate
@@ -22,6 +24,6 @@ abstract class AbstractEntity(
     private var modifiedAt: LocalDateTime? = null,
 ) : Identifiable {
 
-    final override fun id(): Long? = id
+    final override fun id(): Long = id ?: throw ApiException(ErrorCode.NOT_FOUND_IDENTITY)
 
 }

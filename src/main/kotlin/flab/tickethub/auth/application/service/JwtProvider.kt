@@ -1,8 +1,8 @@
 package flab.tickethub.auth.application.service
 
 import flab.tickethub.auth.application.port.out.TokenProvider
-import flab.tickethub.auth.domain.TokenPair
 import flab.tickethub.auth.domain.TokenPayload
+import flab.tickethub.auth.domain.TokenPair
 import flab.tickethub.support.config.time.DateTimeProvider
 import flab.tickethub.support.error.ErrorCode
 import flab.tickethub.support.properties.JwtProperties
@@ -35,14 +35,14 @@ class JwtProvider(
     override fun generateTokenPair(tokenPayload: TokenPayload): TokenPair {
         val accessToken = generateAccessToken(tokenPayload)
         val refreshToken = generateRefreshToken(tokenPayload)
-        return TokenPair(tokenPayload.memberId, accessToken, refreshToken)
+        return TokenPair(tokenPayload, accessToken, refreshToken)
     }
 
     override fun generateAccessToken(tokenPayload: TokenPayload): String {
         return generateToken(
             accessSecretKey,
             jwtProperties.accessExp,
-            tokenPayload.claims
+            tokenPayload.claims()
         )
     }
 
@@ -50,7 +50,7 @@ class JwtProvider(
         return generateToken(
             refreshSecretKey,
             jwtProperties.refreshExp,
-            tokenPayload.claims
+            tokenPayload.claims()
         )
     }
 
@@ -84,7 +84,7 @@ class JwtProvider(
         try {
             require(!token.isNullOrBlank() && token.startsWith(BEARER_PREFIX))
             val parsedClaims = parsedClaims(token.removePrefix(BEARER_PREFIX), secretKey)
-            return TokenPayload(parsedClaims)
+            return TokenPayload.from(parsedClaims)
         } catch (e: ExpiredJwtException) {
             throw CredentialsExpiredException(ErrorCode.EXPIRED_TOKEN.message, e)
         } catch (e: JwtException) {
