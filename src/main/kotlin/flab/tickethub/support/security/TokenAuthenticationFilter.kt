@@ -1,6 +1,5 @@
 package flab.tickethub.support.security
 
-import flab.tickethub.auth.application.port.out.TokenProvider
 import flab.tickethub.auth.domain.TokenPayload
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
@@ -50,7 +49,7 @@ class TokenAuthenticationFilter(
         request: HttpServletRequest
     ): Authentication {
         return UsernamePasswordAuthenticationToken.authenticated(
-            tokenPayload.id(),
+            tokenPayload,
             null,
             listOf(SimpleGrantedAuthority(tokenPayload.role().name))
         ).apply {

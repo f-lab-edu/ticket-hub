@@ -1,4 +1,4 @@
-package flab.tickethub.auth.application.port.out
+package flab.tickethub.support.security
 
 import flab.tickethub.auth.domain.TokenPair
 import flab.tickethub.auth.domain.TokenPayload

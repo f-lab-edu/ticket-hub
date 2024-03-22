@@ -1,4 +1,4 @@
-package flab.tickethub.auth.application.service
+package flab.tickethub.support.security
 
 import flab.tickethub.auth.domain.TokenPayload
 import flab.tickethub.member.domain.Role

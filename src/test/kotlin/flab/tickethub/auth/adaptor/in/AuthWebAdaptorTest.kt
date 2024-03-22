@@ -2,18 +2,21 @@ package flab.tickethub.auth.adaptor.`in`
 
 import flab.tickethub.auth.adaptor.`in`.request.LoginRequest
 import flab.tickethub.auth.application.port.`in`.AuthQueryUseCase
-import flab.tickethub.auth.domain.TokenPayload
+import flab.tickethub.auth.domain.MemberPrincipal
 import flab.tickethub.auth.domain.TokenPair
+import flab.tickethub.auth.domain.TokenPayload
 import flab.tickethub.member.domain.Role
 import flab.tickethub.support.RestDocsSupport
 import flab.tickethub.support.constant.ApiEndpoint
 import flab.tickethub.support.error.ApiException
 import flab.tickethub.support.error.ErrorCode
+import flab.tickethub.support.security.WithMockMember
 import io.restassured.http.ContentType
 import org.hamcrest.core.IsEqual.equalTo
 import org.hamcrest.core.IsNull.nullValue
 import org.junit.jupiter.api.Test
 import org.mockito.BDDMockito.given
+import org.mockito.BDDMockito.willDoNothing
 import org.mockito.Mockito.mock
 import org.springframework.http.HttpStatus
 import org.springframework.restdocs.payload.JsonFieldType
@@ -22,9 +25,9 @@ import java.net.URI
 
 class AuthWebAdaptorTest : RestDocsSupport() {
 
-    private val authQueryUseCase = mock(AuthQueryUseCase::class.java)
+    private val authQueryUseCase: AuthQueryUseCase = mock(AuthQueryUseCase::class.java)
 
-    private val authCommandUseCase = mock(AuthCommandUseCase::class.java)
+    private val authCommandUseCase: AuthCommandUseCase = mock(AuthCommandUseCase::class.java)
 
     @Test
     fun `로그인 성공`() {
@@ -95,6 +98,17 @@ class AuthWebAdaptorTest : RestDocsSupport() {
                 "message", equalTo("잘못된 이메일 또는 비밀번호입니다."),
                 "data", nullValue()
             )
+    }
+
+    @WithMockMember
+    @Test
+    fun `로그아웃 성공`(memberPrincipal: MemberPrincipal) {
+        willDoNothing().given(authCommandUseCase).logout(memberPrincipal)
+
+        given()
+            .post(URI.create("${ApiEndpoint.AUTH}${ApiEndpoint.LOGOUT_ENDPOINT}"))
+            .then()
+            .status(HttpStatus.OK)
     }
 
     override fun controller(): Any {

@@ -2,10 +2,12 @@ package flab.tickethub.auth.adaptor.`in`
 
 import flab.tickethub.auth.adaptor.`in`.request.LoginRequest
 import flab.tickethub.auth.application.port.`in`.AuthQueryUseCase
+import flab.tickethub.auth.domain.MemberPrincipal
 import flab.tickethub.auth.domain.TokenPair
 import flab.tickethub.support.constant.ApiEndpoint
 import flab.tickethub.support.response.ApiResult
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -24,6 +26,13 @@ class AuthWebAdaptor(
         val tokenPair = authCommandUseCase.updateRefreshToken(tokenPayload)
 
         return ApiResult.ok(tokenPair)
+    }
+
+    @PostMapping(ApiEndpoint.LOGOUT_ENDPOINT)
+    fun logout(@AuthenticationPrincipal memberPrincipal: MemberPrincipal): ResponseEntity<Unit> {
+        authCommandUseCase.logout(memberPrincipal)
+
+        return ApiResult.ok()
     }
 
 }

@@ -1,6 +1,5 @@
-package flab.tickethub.auth.application.service
+package flab.tickethub.support.security
 
-import flab.tickethub.auth.application.port.out.TokenProvider
 import flab.tickethub.auth.domain.TokenPayload
 import flab.tickethub.auth.domain.TokenPair
 import flab.tickethub.support.config.time.DateTimeProvider

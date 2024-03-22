@@ -3,6 +3,8 @@ package flab.tickethub.member.domain
 import flab.tickethub.auth.domain.TokenPayload
 import flab.tickethub.member.adaptor.`in`.request.CreateMemberRequest
 import flab.tickethub.support.domain.AbstractEntity
+import flab.tickethub.support.error.ApiException
+import flab.tickethub.support.error.ErrorCode
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
@@ -13,7 +15,7 @@ import kotlin.reflect.KFunction1
 @Entity
 class Member(
     @Column(name = "refresh_token", unique = true)
-    var refreshToken: String? = null,
+    private var refreshToken: String? = null,
 
     @Column(name = "email", unique = true)
     val email: String,
@@ -49,6 +51,17 @@ class Member(
         }
     }
 
-    override fun role(): Role = role
+    override fun id() = id
+        ?: throw ApiException(ErrorCode.NOT_FOUND_IDENTITY)
+
+    override fun role() = role
+
+    fun login(refreshToken: String) {
+        this.refreshToken = refreshToken
+    }
+
+    fun logout() {
+        this.refreshToken = null
+    }
 
 }
