@@ -1,6 +1,8 @@
 package flab.tickethub.auth.adaptor.`in`
 
 import flab.tickethub.auth.adaptor.`in`.request.LoginRequest
+import flab.tickethub.auth.adaptor.`in`.request.RefreshAccessTokenRequest
+import flab.tickethub.auth.application.port.`in`.AuthCommandUseCase
 import flab.tickethub.auth.application.port.`in`.AuthQueryUseCase
 import flab.tickethub.auth.domain.MemberPrincipal
 import flab.tickethub.auth.domain.TokenPair
@@ -52,7 +54,7 @@ class AuthWebAdaptorTest : RestDocsSupport() {
 
         given()
             .contentType(ContentType.JSON)
-            .body(convert(request))
+            .body(request)
             .post(URI.create("${ApiEndpoint.AUTH}${ApiEndpoint.LOGIN_ENDPOINT}"))
             .then()
             .status(HttpStatus.OK)
@@ -89,7 +91,7 @@ class AuthWebAdaptorTest : RestDocsSupport() {
 
         given()
             .contentType(ContentType.JSON)
-            .body(convert(request))
+            .body(request)
             .post(URI.create("${ApiEndpoint.AUTH}${ApiEndpoint.LOGIN_ENDPOINT}"))
             .then()
             .status(HttpStatus.UNAUTHORIZED)
@@ -109,6 +111,33 @@ class AuthWebAdaptorTest : RestDocsSupport() {
             .post(URI.create("${ApiEndpoint.AUTH}${ApiEndpoint.LOGOUT_ENDPOINT}"))
             .then()
             .status(HttpStatus.OK)
+    }
+
+    @Test
+    fun `엑세스 토큰 재발급 성공`() {
+        val request = RefreshAccessTokenRequest("refreshToken")
+
+        given(authCommandUseCase.refreshAccessToken(request)).willReturn("accessToken")
+
+        given()
+            .contentType(ContentType.JSON)
+            .body(request)
+            .post(URI.create("${ApiEndpoint.AUTH}${ApiEndpoint.REFRESH_ACCESS_TOKEN_ENDPOINT}"))
+            .then()
+            .status(HttpStatus.OK)
+            .body("data.accessToken", equalTo("accessToken"))
+            .apply(
+                document(
+                    requestFields(
+                        fieldWithPath("refreshToken").type(JsonFieldType.STRING)
+                            .description("리프레시 토큰"),
+                    ),
+                    responseFields(
+                        fieldWithPath("data.accessToken").type(JsonFieldType.STRING)
+                            .description("새로운 엑세스 토큰"),
+                    )
+                )
+            )
     }
 
     override fun controller(): Any {
