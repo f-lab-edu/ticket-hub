@@ -4,7 +4,6 @@ import flab.tickethub.auth.adaptor.`in`.request.LoginRequest
 import flab.tickethub.auth.adaptor.`in`.request.RefreshAccessTokenRequest
 import flab.tickethub.auth.adaptor.`in`.response.RefreshAccessTokenResponse
 import flab.tickethub.auth.application.port.`in`.AuthCommandUseCase
-import flab.tickethub.auth.application.port.`in`.AuthQueryUseCase
 import flab.tickethub.auth.domain.MemberPrincipal
 import flab.tickethub.auth.domain.TokenPair
 import flab.tickethub.support.constant.ApiEndpoint
@@ -20,15 +19,13 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping(ApiEndpoint.AUTH)
 @RestController
 class AuthWebAdaptor(
-    private val authQueryUseCase: AuthQueryUseCase,
     private val authCommandUseCase: AuthCommandUseCase,
 ) {
 
     @PostMapping(ApiEndpoint.LOGIN_ENDPOINT)
     fun login(@RequestBody request: LoginRequest)
             : ResponseEntity<ApiResult<TokenPair>> {
-        val tokenPayload = authQueryUseCase.login(request)
-        val tokenPair = authCommandUseCase.updateRefreshToken(tokenPayload)
+        val tokenPair = authCommandUseCase.login(request)
 
         return ApiResult.ok(tokenPair)
     }

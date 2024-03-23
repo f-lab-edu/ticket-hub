@@ -3,7 +3,6 @@ package flab.tickethub.auth.adaptor.`in`
 import flab.tickethub.auth.adaptor.`in`.request.LoginRequest
 import flab.tickethub.auth.adaptor.`in`.request.RefreshAccessTokenRequest
 import flab.tickethub.auth.application.port.`in`.AuthCommandUseCase
-import flab.tickethub.auth.application.port.`in`.AuthQueryUseCase
 import flab.tickethub.auth.domain.MemberPrincipal
 import flab.tickethub.auth.domain.TokenPair
 import flab.tickethub.auth.domain.TokenPayload
@@ -27,8 +26,6 @@ import java.net.URI
 
 class AuthWebAdaptorTest : RestDocsSupport() {
 
-    private val authQueryUseCase: AuthQueryUseCase = mock(AuthQueryUseCase::class.java)
-
     private val authCommandUseCase: AuthCommandUseCase = mock(AuthCommandUseCase::class.java)
 
     @Test
@@ -49,8 +46,7 @@ class AuthWebAdaptorTest : RestDocsSupport() {
             password = "password",
         )
 
-        given(authQueryUseCase.login(request)).willReturn(tokenPayload)
-        given(authCommandUseCase.updateRefreshToken(tokenPayload)).willReturn(tokenPair)
+        given(authCommandUseCase.login(request)).willReturn(tokenPair)
 
         given()
             .contentType(ContentType.JSON)
@@ -87,7 +83,7 @@ class AuthWebAdaptorTest : RestDocsSupport() {
             password = "password",
         )
 
-        given(authQueryUseCase.login(request)).willThrow(ApiException(ErrorCode.INVALID_EMAIL_OR_PASSWORD))
+        given(authCommandUseCase.login(request)).willThrow(ApiException(ErrorCode.INVALID_EMAIL_OR_PASSWORD))
 
         given()
             .contentType(ContentType.JSON)
@@ -141,7 +137,7 @@ class AuthWebAdaptorTest : RestDocsSupport() {
     }
 
     override fun controller(): Any {
-        return AuthWebAdaptor(authQueryUseCase, authCommandUseCase)
+        return AuthWebAdaptor(authCommandUseCase)
     }
 
 }
