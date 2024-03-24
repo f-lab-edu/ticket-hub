@@ -1,15 +1,16 @@
-package flab.tickethub.auth.application.service
+package flab.tickethub.support.security
 
 import flab.tickethub.auth.domain.TokenPayload
+import flab.tickethub.member.domain.Role
 import flab.tickethub.support.config.time.DateTimeProvider
-import flab.tickethub.support.domain.Identifiable
-import flab.tickethub.support.error.ApiException
 import flab.tickethub.support.error.ErrorCode
 import flab.tickethub.support.properties.JwtProperties
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
+import org.springframework.security.authentication.BadCredentialsException
+import org.springframework.security.authentication.CredentialsExpiredException
 import java.time.Duration
 import java.time.temporal.ChronoUnit
 import java.util.*
@@ -70,11 +71,10 @@ class JwtProviderTest {
 
     @Test
     fun `엑세스 토큰 검증 성공`() {
-        val tokenPayload = TokenPayload(
-            object : Identifiable {
-                override fun id(): Long = 1L
-            }
-        )
+        val tokenPayload = object : TokenPayload {
+            override fun id() = 1L
+            override fun role() = Role.BUYER
+        }
 
         val accessToken = tokenProvider.generateAccessToken(tokenPayload)
 
@@ -83,59 +83,51 @@ class JwtProviderTest {
 
     @Test
     fun `만료된 엑세스 토큰 검증 실패`() {
-        val tokenPayload = TokenPayload(
-            object : Identifiable {
-                override fun id(): Long = 1L
-            }
-        )
+        val tokenPayload = object : TokenPayload {
+            override fun id() = 1L
+            override fun role() = Role.BUYER
+        }
 
         val expiredAccessToken = expiredTokenProvider.generateAccessToken(tokenPayload)
 
-        assertThrows<ApiException>(
+        assertThrows<CredentialsExpiredException>(
             ErrorCode.EXPIRED_TOKEN.message
         ) { tokenProvider.validateAccessToken(expiredAccessToken) }
     }
 
     @Test
     fun `잘못된 엑세스 토큰 검증 실패`() {
-        val tokenPayload = TokenPayload(
-            object : Identifiable {
-                override fun id(): Long = 1L
-            }
-        )
+        val tokenPayload = object : TokenPayload {
+            override fun id() = 1L
+            override fun role() = Role.BUYER
+        }
 
         val invalidKeyAccessToken = invalidKeyTokenProvider.generateAccessToken(tokenPayload)
 
-        assertThrows<ApiException>(
+        assertThrows<BadCredentialsException>(
             ErrorCode.INVALID_TOKEN.message
         ) { tokenProvider.validateAccessToken(invalidKeyAccessToken) }
     }
 
     @Test
     fun `잘못된 형식의 엑세스 토큰 검증 실패`() {
-        val tokenPayload = TokenPayload(
-            object : Identifiable {
-                override fun id(): Long = 1L
-            }
-        )
+        val tokenPayload = object : TokenPayload {
+            override fun id() = 1L
+            override fun role() = Role.BUYER
+        }
         val nonPrefixAccessToken =
             tokenProvider.generateAccessToken(tokenPayload).removePrefix(BEARER_PREFIX)
 
-        assertThrows<ApiException>(
+        assertThrows<BadCredentialsException>(
             ErrorCode.INVALID_TOKEN.message
         ) { tokenProvider.validateAccessToken(nonPrefixAccessToken) }
     }
 
     @Test
     fun `비어있는 엑세스 토큰 검증 실패`() {
-        val tokenPayload = TokenPayload(
-            object : Identifiable {
-                override fun id(): Long = 1L
-            }
-        )
         val blankAccessToken = ""
 
-        assertThrows<ApiException>(
+        assertThrows<BadCredentialsException>(
             ErrorCode.INVALID_TOKEN.message
         ) { tokenProvider.validateAccessToken(blankAccessToken) }
     }

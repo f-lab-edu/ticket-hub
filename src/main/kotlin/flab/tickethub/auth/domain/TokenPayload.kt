@@ -1,23 +1,28 @@
 package flab.tickethub.auth.domain
 
-import flab.tickethub.support.domain.Identifiable
+import flab.tickethub.member.domain.Role
 import io.jsonwebtoken.Claims
 
 private const val MEMBER_ID_KEY = "memberId"
+private const val MEMBER_ROLE_KEY = "memberRole"
 
-data class TokenPayload(
-    val memberId: Identifiable
-) {
+interface TokenPayload : MemberPrincipal {
 
-    val claims: Map<String, Any> =
+    fun role(): Role
+
+    fun claims(): Map<String, Any> =
         mapOf(
-            MEMBER_ID_KEY to memberId
+            MEMBER_ID_KEY to id(),
+            MEMBER_ROLE_KEY to role()
         )
 
-    constructor(claims: Claims) : this(
-        object : Identifiable {
-            override fun id(): Long? = claims[MEMBER_ID_KEY] as Long?
+    companion object {
+        fun from(claims: Claims): TokenPayload {
+            return object : TokenPayload {
+                override fun id() = (claims[MEMBER_ID_KEY] as Int).toLong()
+                override fun role() = Role.valueOf(claims[MEMBER_ROLE_KEY] as String)
+            }
         }
-    )
+    }
 
 }

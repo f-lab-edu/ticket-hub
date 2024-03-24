@@ -1,4 +1,4 @@
-package flab.tickethub.auth.application.port.out
+package flab.tickethub.support.security
 
 import flab.tickethub.auth.domain.TokenPair
 import flab.tickethub.auth.domain.TokenPayload
@@ -11,8 +11,8 @@ interface TokenProvider {
 
     fun generateRefreshToken(tokenPayload: TokenPayload): String
 
-    fun validateAccessToken(token: String)
+    fun validateAccessToken(token: String?): TokenPayload
 
-    fun validateRefreshToken(token: String)
+    fun validateRefreshToken(token: String?): TokenPayload
 
 }

@@ -16,13 +16,17 @@ import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentati
 import org.springframework.restdocs.mockmvc.RestDocumentationResultHandler
 import org.springframework.restdocs.operation.preprocess.Preprocessors
 import org.springframework.restdocs.snippet.Snippet
+import org.springframework.security.web.method.annotation.AuthenticationPrincipalArgumentResolver
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.test.web.servlet.setup.StandaloneMockMvcBuilder
 import java.nio.charset.Charset
 
 @JsonTest
-@ExtendWith(RestDocumentationExtension::class)
+@ExtendWith(
+    RestDocumentationExtension::class,
+    MemberPrincipalResolver::class
+)
 abstract class RestDocsSupport {
 
     private lateinit var mockMvc: MockMvcRequestSpecification
@@ -41,6 +45,7 @@ abstract class RestDocsSupport {
             MockMvcBuilders
                 .standaloneSetup(controller())
                 .setControllerAdvice(ApiControllerAdvice())
+                .setCustomArgumentResolvers(AuthenticationPrincipalArgumentResolver())
                 .defaultResponseCharacterEncoding<StandaloneMockMvcBuilder>(Charset.defaultCharset())
                 .apply<StandaloneMockMvcBuilder>(
                     documentationConfiguration(provider)
@@ -57,8 +62,6 @@ abstract class RestDocsSupport {
 
     protected fun document(vararg snippets: Snippet): RestDocumentationResultHandler =
         resultHandler.document(*snippets)
-
-    protected fun <T> convert(obj: T): String = objectMapper.writeValueAsString(obj)
 
     protected abstract fun controller(): Any
 

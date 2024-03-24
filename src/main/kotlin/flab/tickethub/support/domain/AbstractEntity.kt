@@ -11,17 +11,13 @@ import java.time.LocalDateTime
 abstract class AbstractEntity(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
-    private val id: Long? = null,
+    protected val id: Long? = null,
 
     @CreatedDate
     @Column(name = "created_at", updatable = false)
-    private val createdAt: LocalDateTime? = null,
+    private var createdAt: LocalDateTime? = null,
 
     @LastModifiedDate
     @Column(name = "modified_at")
-    private val modifiedAt: LocalDateTime? = null,
-) : Identifiable {
-
-    override fun id(): Long? = id
-
-}
+    private var modifiedAt: LocalDateTime? = null,
+)
